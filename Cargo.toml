@@ -19,6 +19,7 @@ dotenvy = "0.15"
 axum-extra = { version = "0.9", features = ["cookie"] }
 bigdecimal = { version = "0.3", features = ["serde"] }
 time = { version = "0.3", features = ["serde"] }
+env_logger = "0.10"
 
 # Pin problematic dependencies to compatible versions
 base64ct = "=1.6.0"

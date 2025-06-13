@@ -25,12 +25,18 @@ FROM debian:bookworm-slim
 
 RUN apt-get update && apt-get install -y \
     ca-certificates \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY --from=builder /app/target/release/budget_tracker .
 COPY --from=builder /app/migrations ./migrations
 COPY static ./static
+
+# Create non-root user for security
+RUN useradd -r -s /bin/false appuser && \
+    chown -R appuser:appuser /app
+USER appuser
 
 EXPOSE 3000
 
