@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Personal Budget Tracker</h1>
+            <div class="user-info" id="userInfo" style="display: none;">
+                <span id="userName"></span>
+                <div class="user-menu">
+                    <button id="settingsBtn">Settings</button>
+                    <button id="logoutBtn">Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <div class="auth-tabs">
+                <button class="tab-btn active" onclick="showLogin()">Login</button>
+                <button class="tab-btn" onclick="showRegister()">Register</button>
+            </div>
+            
+            <div id="loginForm" class="auth-form">
+                <h2>Login</h2>
+                <form onsubmit="login(event)">
+                    <input type="email" id="loginEmail" placeholder="Email" required>
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+            
+            <div id="registerForm" class="auth-form" style="display: none;">
+                <h2>Register</h2>
+                <form onsubmit="register(event)">
+                    <input type="text" id="registerName" placeholder="Full Name" required>
+                    <input type="email" id="registerEmail" placeholder="Email" required>
+                    <input type="password" id="registerPassword" placeholder="Password (min 6 chars)" required minlength="6">
+                    <button type="submit">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Account Settings</h2>
+                <span class="close" onclick="closeSettings()">&times;</span>
+            </div>
+            <div class="settings-content">
+                <div class="danger-zone">
+                    <h3>Danger Zone</h3>
+                    <p>Once you delete your account, there is no going back. This will permanently delete your account and all your budget data.</p>
+                    <button id="deleteAccountBtn" class="danger-btn" onclick="confirmDeleteAccount()">Delete Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main id="budgetApp" style="display: none;">
+        <div class="controls">
+            <div class="year-selector">
+                <label for="yearSelect">Year:</label>
+                <select id="yearSelect" onchange="loadBudget()">
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="budget-container">
+            <div id="budgetGrid" class="budget-grid"></div>
+            
+            <div class="summary">
+                <div class="summary-row">
+                    <span class="summary-label">Total Income:</span>
+                    <span id="totalIncome" class="summary-value income">$0.00</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Total Expenses:</span>
+                    <span id="totalExpenses" class="summary-value expense">$0.00</span>
+                </div>
+                <div class="summary-row total">
+                    <span class="summary-label">Net:</span>
+                    <span id="netAmount" class="summary-value">$0.00</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
