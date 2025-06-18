@@ -11,6 +11,8 @@ mod budget;
 mod database;
 mod handlers;
 mod models;
+mod analytics;
+mod analytics_handlers;
 
 use database::Database;
 
@@ -45,6 +47,8 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/user", delete(handlers::delete_user))
         .route("/api/budget", get(handlers::get_budget))
         .route("/api/budget", post(handlers::save_budget))
+        .route("/api/analytics/dashboard", get(analytics_handlers::get_analytics_data))
+        .route("/api/analytics/sessions", get(analytics_handlers::get_user_sessions))
         .layer(middleware::from_fn_with_state(
             app_state.clone(),
             auth::auth_middleware,
@@ -52,6 +56,7 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/", get(handlers::index))
+        .route("/analytics", get(analytics_handlers::analytics_dashboard))
         .route("/api/register", post(handlers::register))
         .route("/api/login", post(handlers::login))
         .route("/api/logout", post(handlers::logout))
@@ -59,10 +64,15 @@ async fn main() -> anyhow::Result<()> {
         .merge(protected_routes)
         .nest_service("/static", ServeDir::new("static"))
         .layer(cors)
+        .layer(middleware::from_fn_with_state(
+            app_state.clone(),
+            analytics::analytics_middleware,
+        ))
         .with_state(app_state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
     println!("Server running on http://0.0.0.0:3000");
+    println!("Analytics dashboard: http://0.0.0.0:3000/analytics");
     
     axum::serve(listener, app).await?;
     Ok(())
