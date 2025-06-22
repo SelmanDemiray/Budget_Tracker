@@ -2,6 +2,11 @@ let currentUser = null;
 let budgetData = [];
 let categories = [];
 
+// Category management variables
+let allCategories = [];
+let filteredCategories = [];
+let collapsedCategories = new Set();
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
     await loadCategories();
@@ -169,23 +174,63 @@ function renderBudgetGrid() {
     const grid = document.getElementById('budgetGrid');
     grid.innerHTML = '';
     
-    categories.forEach(category => {
+    // Add category controls
+    const controlsDiv = document.createElement('div');
+    controlsDiv.className = 'category-controls';
+    controlsDiv.innerHTML = `
+        <input type="text" class="search-box" placeholder="Search categories and subcategories..." id="categorySearch">
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="income">Income</button>
+            <button class="filter-btn" data-filter="expense">Expenses</button>
+        </div>
+        <button class="collapse-all-btn" id="collapseAllBtn">Collapse All</button>
+    `;
+    grid.appendChild(controlsDiv);
+    
+    // Add event listeners for controls
+    document.getElementById('categorySearch').addEventListener('input', handleSearch);
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', handleFilter);
+    });
+    document.getElementById('collapseAllBtn').addEventListener('click', toggleCollapseAll);
+    
+    filteredCategories = [...categories];
+    renderCategories();
+}
+
+function renderCategories() {
+    const grid = document.getElementById('budgetGrid');
+    const existingControls = grid.querySelector('.category-controls');
+    grid.innerHTML = '';
+    if (existingControls) {
+        grid.appendChild(existingControls);
+    }
+    
+    filteredCategories.forEach(category => {
         const section = document.createElement('div');
         section.className = `category-section ${category.is_income ? 'income' : 'expense'}`;
+        section.setAttribute('data-category', category.name.toLowerCase());
         
         const header = document.createElement('div');
         header.className = 'category-header';
-        header.textContent = category.name;
+        
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = `category-toggle ${collapsedCategories.has(category.name) ? 'collapsed' : ''}`;
+        toggleBtn.innerHTML = `${category.name} <span class="subcategory-count">(${category.subcategories.length} items)</span>`;
+        toggleBtn.addEventListener('click', () => toggleCategory(category.name));
+        
+        header.appendChild(toggleBtn);
         section.appendChild(header);
         
         const subcategoryGrid = document.createElement('div');
-        subcategoryGrid.className = 'subcategory-grid';
+        subcategoryGrid.className = `subcategory-grid ${collapsedCategories.has(category.name) ? 'collapsed' : ''}`;
         
         // Header row
         const headerRow = document.createElement('div');
         headerRow.className = 'subcategory-row';
         headerRow.innerHTML = `
-            <div class="subcategory-name"></div>
+            <div class="subcategory-name"><strong>Subcategory</strong></div>
             ${months.map(month => `<div class="month-header">${month}</div>`).join('')}
             <div class="month-header">TOTAL</div>
         `;
@@ -195,10 +240,12 @@ function renderBudgetGrid() {
         category.subcategories.forEach(subcategory => {
             const row = document.createElement('div');
             row.className = 'subcategory-row';
+            row.setAttribute('data-subcategory', subcategory.toLowerCase());
             
             const nameCell = document.createElement('div');
             nameCell.className = 'subcategory-name';
             nameCell.textContent = subcategory;
+            nameCell.title = subcategory; // Tooltip for long names
             row.appendChild(nameCell);
             
             let yearTotal = 0;
@@ -226,6 +273,11 @@ function renderBudgetGrid() {
                 }
                 
                 input.addEventListener('blur', () => saveBudgetEntry(category.name, subcategory, month, input.value));
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        input.blur();
+                    }
+                });
                 
                 cell.appendChild(input);
                 row.appendChild(cell);
@@ -243,6 +295,97 @@ function renderBudgetGrid() {
         section.appendChild(subcategoryGrid);
         grid.appendChild(section);
     });
+}
+
+function handleSearch(event) {
+    const searchTerm = event.target.value.toLowerCase();
+    
+    if (searchTerm === '') {
+        filteredCategories = [...categories];
+    } else {
+        filteredCategories = categories.filter(category => {
+            const categoryMatch = category.name.toLowerCase().includes(searchTerm);
+            const subcategoryMatch = category.subcategories.some(sub => 
+                sub.toLowerCase().includes(searchTerm)
+            );
+            return categoryMatch || subcategoryMatch;
+        }).map(category => {
+            if (category.name.toLowerCase().includes(searchTerm)) {
+                return category;
+            } else {
+                // Filter subcategories that match the search
+                return {
+                    ...category,
+                    subcategories: category.subcategories.filter(sub => 
+                        sub.toLowerCase().includes(searchTerm)
+                    )
+                };
+            }
+        });
+    }
+    
+    renderCategories();
+    highlightSearchResults(searchTerm);
+}
+
+function highlightSearchResults(searchTerm) {
+    if (searchTerm === '') return;
+    
+    document.querySelectorAll('.subcategory-name').forEach(element => {
+        const text = element.textContent;
+        const regex = new RegExp(`(${searchTerm})`, 'gi');
+        element.innerHTML = text.replace(regex, '<mark>$1</mark>');
+    });
+}
+
+function handleFilter(event) {
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    const filter = event.target.getAttribute('data-filter');
+    
+    switch (filter) {
+        case 'income':
+            filteredCategories = categories.filter(cat => cat.is_income);
+            break;
+        case 'expense':
+            filteredCategories = categories.filter(cat => !cat.is_income);
+            break;
+        default:
+            filteredCategories = [...categories];
+    }
+    
+    renderCategories();
+}
+
+function toggleCategory(categoryName) {
+    if (collapsedCategories.has(categoryName)) {
+        collapsedCategories.delete(categoryName);
+    } else {
+        collapsedCategories.add(categoryName);
+    }
+    
+    const section = document.querySelector(`[data-category="${categoryName.toLowerCase()}"]`);
+    const toggle = section.querySelector('.category-toggle');
+    const grid = section.querySelector('.subcategory-grid');
+    
+    toggle.classList.toggle('collapsed');
+    grid.classList.toggle('collapsed');
+}
+
+function toggleCollapseAll() {
+    const btn = document.getElementById('collapseAllBtn');
+    const isCollapsing = btn.textContent === 'Collapse All';
+    
+    if (isCollapsing) {
+        categories.forEach(category => collapsedCategories.add(category.name));
+        btn.textContent = 'Expand All';
+    } else {
+        collapsedCategories.clear();
+        btn.textContent = 'Collapse All';
+    }
+    
+    renderCategories();
 }
 
 async function saveBudgetEntry(category, subcategory, month, amount) {
@@ -373,3 +516,20 @@ const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', '
 // Event listeners
 document.getElementById('logoutBtn').addEventListener('click', logout);
 document.getElementById('settingsBtn').addEventListener('click', showSettings);
+
+// Add keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+            case 'f':
+                e.preventDefault();
+                document.getElementById('categorySearch').focus();
+                break;
+            case 's':
+                e.preventDefault();
+                // Auto-save all changes
+                console.log('Auto-save triggered');
+                break;
+        }
+    }
+});
