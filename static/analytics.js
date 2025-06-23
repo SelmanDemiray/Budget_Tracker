@@ -204,3 +204,5 @@ function formatDuration(seconds) {
     const hours = Math.floor(minutes / 60);
     return `${hours}h ${minutes % 60}m`;
 }
+
+// (No changes needed, your file already matches the modern dashboard.)

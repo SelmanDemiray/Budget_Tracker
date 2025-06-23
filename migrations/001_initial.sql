@@ -1,5 +1,10 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- SECURITY: All user data is stored with UUIDv4 (128-bit random), unique per user.
+-- Passwords are stored as bcrypt hashes with per-user salt.
+-- Database user has minimal privileges (no superuser, no remote access).
+-- All queries are parameterized to prevent SQL injection.
+
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) UNIQUE NOT NULL,

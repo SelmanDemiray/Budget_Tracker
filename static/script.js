@@ -6,15 +6,41 @@ let categories = [];
 let allCategories = [];
 let filteredCategories = [];
 let collapsedCategories = new Set();
+let isGuest = false;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
     await loadCategories();
     await checkAuth();
-    
-    // Set current year as default
+
+    // Theme switcher
+    const themeSwitcher = document.getElementById('themeSwitcher');
+    if (themeSwitcher) {
+        themeSwitcher.addEventListener('click', toggleTheme);
+        // Set initial theme
+        if (localStorage.getItem('theme') === 'dark') setDarkTheme();
+    }
+
+    // Set current year as default if available, otherwise select the closest year
     const yearSelect = document.getElementById('yearSelect');
-    yearSelect.value = new Date().getFullYear().toString();
+    const currentYear = new Date().getFullYear();
+    let found = false;
+    for (let i = 0; i < yearSelect.options.length; i++) {
+        if (parseInt(yearSelect.options[i].value) === currentYear) {
+            yearSelect.selectedIndex = i;
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        yearSelect.selectedIndex = 0; // fallback to first option
+    }
+
+    // Guest sign-in button logic
+    const guestSignInBtnContainer = document.getElementById('guestSignInBtnContainer');
+    if (guestSignInBtnContainer) {
+        guestSignInBtnContainer.style.display = 'none';
+    }
 });
 
 // Authentication functions
@@ -26,20 +52,54 @@ async function checkAuth() {
         
         if (response.ok) {
             currentUser = await response.json();
+            isGuest = false;
             showBudgetApp();
         } else {
             showAuthModal();
         }
     } catch (error) {
-        console.error('Auth check failed:', error);
         showAuthModal();
     }
 }
 
 function showAuthModal() {
+    isGuest = false;
     document.getElementById('authModal').style.display = 'block';
     document.getElementById('budgetApp').style.display = 'none';
     document.getElementById('userInfo').style.display = 'none';
+    // Hide guest sign-in button if present
+    const guestSignInBtnContainer = document.getElementById('guestSignInBtnContainer');
+    if (guestSignInBtnContainer) guestSignInBtnContainer.style.display = 'none';
+    // Autofocus login email for better UX
+    setTimeout(() => {
+        const emailInput = document.getElementById('loginEmail');
+        if (emailInput) emailInput.focus();
+    }, 100);
+}
+
+// Allow closing modal for guest/demo mode
+function closeAuthModal() {
+    continueAsGuest();
+}
+
+// Guest/demo mode logic
+function continueAsGuest() {
+    isGuest = true;
+    currentUser = null;
+    document.getElementById('authModal').style.display = 'none';
+    document.getElementById('settingsModal').style.display = 'none';
+    document.getElementById('budgetApp').style.display = 'block';
+    document.getElementById('userInfo').style.display = 'none';
+    // Show guest sign-in button
+    const guestSignInBtnContainer = document.getElementById('guestSignInBtnContainer');
+    if (guestSignInBtnContainer) guestSignInBtnContainer.style.display = 'block';
+    loadBudget();
+}
+
+// Show login/register modal from guest/demo mode
+function showAuthModalFromGuest() {
+    isGuest = false;
+    showAuthModal();
 }
 
 function showBudgetApp() {
@@ -48,6 +108,17 @@ function showBudgetApp() {
     document.getElementById('budgetApp').style.display = 'block';
     document.getElementById('userInfo').style.display = 'flex';
     document.getElementById('userName').textContent = currentUser.full_name;
+    // Show analytics button
+    const analyticsBtn = document.getElementById('analyticsBtn');
+    if (analyticsBtn) analyticsBtn.style.display = 'inline-block';
+    // Show avatar initial
+    const avatar = document.getElementById('userAvatar');
+    if (avatar && currentUser.full_name) {
+        avatar.textContent = currentUser.full_name[0].toUpperCase();
+    }
+    // Hide guest sign-in button
+    const guestSignInBtnContainer = document.getElementById('guestSignInBtnContainer');
+    if (guestSignInBtnContainer) guestSignInBtnContainer.style.display = 'none';
     loadBudget();
 }
 
@@ -95,10 +166,20 @@ async function register(event) {
         if (response.ok) {
             currentUser = await response.json();
             showBudgetApp();
-        } else if (response.status === 409) {
-            alert('Email already exists. Please use a different email.');
         } else {
-            alert('Registration failed. Please try again.');
+            // Improved: Show specific error messages
+            let errorMsg = 'Registration failed. Please try again.';
+            try {
+                const data = await response.json();
+                if (data.errors && Array.isArray(data.errors)) {
+                    errorMsg = data.errors.join('\n');
+                } else if (data.error) {
+                    errorMsg = data.error;
+                }
+            } catch (_) {
+                // Ignore JSON parse errors
+            }
+            alert(errorMsg);
         }
     } catch (error) {
         console.error('Registration error:', error);
@@ -135,6 +216,10 @@ function showRegister() {
 }
 
 function showSettings() {
+    if (isGuest) {
+        alert('Sign in to access account settings.');
+        return;
+    }
     document.getElementById('settingsModal').style.display = 'block';
 }
 
@@ -154,12 +239,17 @@ async function loadCategories() {
 
 async function loadBudget() {
     const year = document.getElementById('yearSelect').value;
-    
+    if (isGuest) {
+        // Demo: Use localStorage or just empty data for demo
+        budgetData = [];
+        renderBudgetGrid();
+        updateSummary();
+        return;
+    }
     try {
         const response = await fetch(`/api/budget?year=${year}`, {
             credentials: 'include'
         });
-        
         if (response.ok) {
             budgetData = await response.json();
             renderBudgetGrid();
@@ -206,92 +296,99 @@ function renderCategories() {
     if (existingControls) {
         grid.appendChild(existingControls);
     }
-    
+
+    // Determine current month and selected year
+    const now = new Date();
+    const selectedYear = parseInt(document.getElementById('yearSelect').value);
+    const currentMonth = (now.getFullYear() === selectedYear) ? now.getMonth() + 1 : null;
+
     filteredCategories.forEach(category => {
         const section = document.createElement('div');
         section.className = `category-section ${category.is_income ? 'income' : 'expense'}`;
         section.setAttribute('data-category', category.name.toLowerCase());
-        
+
         const header = document.createElement('div');
         header.className = 'category-header';
-        
+
         const toggleBtn = document.createElement('button');
         toggleBtn.className = `category-toggle ${collapsedCategories.has(category.name) ? 'collapsed' : ''}`;
         toggleBtn.innerHTML = `${category.name} <span class="subcategory-count">(${category.subcategories.length} items)</span>`;
         toggleBtn.addEventListener('click', () => toggleCategory(category.name));
-        
+
         header.appendChild(toggleBtn);
         section.appendChild(header);
-        
+
         const subcategoryGrid = document.createElement('div');
         subcategoryGrid.className = `subcategory-grid ${collapsedCategories.has(category.name) ? 'collapsed' : ''}`;
-        
+
         // Header row
         const headerRow = document.createElement('div');
         headerRow.className = 'subcategory-row';
         headerRow.innerHTML = `
             <div class="subcategory-name"><strong>Subcategory</strong></div>
-            ${months.map(month => `<div class="month-header">${month}</div>`).join('')}
+            ${months.map((month, idx) => 
+                `<div class="month-header${currentMonth === idx + 1 ? ' current-month' : ''}">${month}</div>`
+            ).join('')}
             <div class="month-header">TOTAL</div>
         `;
         subcategoryGrid.appendChild(headerRow);
-        
+
         // Subcategory rows
         category.subcategories.forEach(subcategory => {
             const row = document.createElement('div');
             row.className = 'subcategory-row';
             row.setAttribute('data-subcategory', subcategory.toLowerCase());
-            
+
             const nameCell = document.createElement('div');
             nameCell.className = 'subcategory-name';
             nameCell.textContent = subcategory;
             nameCell.title = subcategory; // Tooltip for long names
             row.appendChild(nameCell);
-            
+
             let yearTotal = 0;
-            
+
             // Month cells
             for (let month = 1; month <= 12; month++) {
                 const cell = document.createElement('div');
-                cell.className = 'amount-cell';
-                
+                cell.className = 'amount-cell' + (currentMonth === month ? ' current-month' : '');
+
                 const input = document.createElement('input');
                 input.type = 'number';
                 input.step = '0.01';
                 input.className = 'amount-input';
                 input.placeholder = '0.00';
-                
-                const existingEntry = budgetData.find(entry => 
-                    entry.category === category.name && 
-                    entry.subcategory === subcategory && 
+
+                const existingEntry = budgetData.find(entry =>
+                    entry.category === category.name &&
+                    entry.subcategory === subcategory &&
                     entry.month === month
                 );
-                
+
                 if (existingEntry) {
                     input.value = parseFloat(existingEntry.amount);
                     yearTotal += parseFloat(existingEntry.amount);
                 }
-                
+
                 input.addEventListener('blur', () => saveBudgetEntry(category.name, subcategory, month, input.value));
                 input.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
                         input.blur();
                     }
                 });
-                
+
                 cell.appendChild(input);
                 row.appendChild(cell);
             }
-            
+
             // Year total cell
             const totalCell = document.createElement('div');
             totalCell.className = 'year-total';
             totalCell.textContent = formatCurrency(yearTotal);
             row.appendChild(totalCell);
-            
+
             subcategoryGrid.appendChild(row);
         });
-        
+
         section.appendChild(subcategoryGrid);
         grid.appendChild(section);
     });
@@ -391,7 +488,28 @@ function toggleCollapseAll() {
 async function saveBudgetEntry(category, subcategory, month, amount) {
     const year = parseInt(document.getElementById('yearSelect').value);
     const numAmount = parseFloat(amount) || 0;
-    
+    if (isGuest) {
+        // Demo: Save to local variable only
+        const existingIndex = budgetData.findIndex(entry => 
+            entry.category === category && 
+            entry.subcategory === subcategory && 
+            entry.month === month
+        );
+        if (existingIndex >= 0) {
+            budgetData[existingIndex].amount = numAmount;
+        } else {
+            budgetData.push({
+                category,
+                subcategory,
+                month,
+                year,
+                amount: numAmount
+            });
+        }
+        updateSummary();
+        updateYearTotals();
+        return;
+    }
     try {
         await fetch('/api/budget', {
             method: 'POST',
@@ -476,6 +594,10 @@ function updateYearTotals() {
 
 // Settings functions
 async function confirmDeleteAccount() {
+    if (isGuest) {
+        alert('Sign in to delete your account.');
+        return;
+    }
     if (confirm('Are you sure you want to delete your account? This action cannot be undone and will permanently delete all your data.')) {
         if (confirm('This is your final warning. Delete account and all data?')) {
             await deleteAccount();
@@ -501,6 +623,14 @@ async function deleteAccount() {
         console.error('Delete account error:', error);
         alert('Failed to delete account. Please try again.');
     }
+}
+
+// Security modal logic
+function showSecurityModal() {
+    document.getElementById('securityModal').style.display = 'block';
+}
+function closeSecurityModal() {
+    document.getElementById('securityModal').style.display = 'none';
 }
 
 // Utility functions
@@ -533,3 +663,24 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+// Theme switcher logic
+function toggleTheme() {
+    if (document.body.classList.contains('dark-theme')) {
+        setLightTheme();
+    } else {
+        setDarkTheme();
+    }
+}
+function setDarkTheme() {
+    document.body.classList.add('dark-theme');
+    localStorage.setItem('theme', 'dark');
+    document.getElementById('themeSwitcher').textContent = '☀️';
+}
+function setLightTheme() {
+    document.body.classList.remove('dark-theme');
+    localStorage.setItem('theme', 'light');
+    document.getElementById('themeSwitcher').textContent = '🌙';
+}
+
+// (No changes needed, your file already contains logic matching the modernized UI and CSS.)

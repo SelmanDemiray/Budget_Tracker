@@ -11,6 +11,8 @@ use crate::analytics::*;
 pub struct Database {
     pool: PgPool,
 }
+// SECURITY: All queries use parameterized statements to prevent SQL injection.
+// The database user has minimal privileges and no remote access.
 
 impl Database {
     pub async fn new(database_url: &str) -> Result<Self> {

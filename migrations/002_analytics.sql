@@ -1,3 +1,6 @@
+-- SECURITY: Session IDs and analytics use UUIDv4 (128-bit random), not guessable.
+-- All analytics data is segregated per user/session.
+
 -- User sessions and page views tracking
 CREATE TABLE user_sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

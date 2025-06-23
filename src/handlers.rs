@@ -36,24 +36,63 @@ pub async fn register(
     State(db): State<Arc<Database>>,
     jar: CookieJar,
     Json(payload): Json<RegisterRequest>,
-) -> Result<(CookieJar, Json<UserPublic>), StatusCode> {
-    // Validate input
-    if payload.email.is_empty() || payload.password.len() < 6 || payload.full_name.is_empty() {
-        return Err(StatusCode::BAD_REQUEST);
+) -> Result<(CookieJar, Json<UserPublic>), (StatusCode, Json<serde_json::Value>)> {
+    // Improved: Collect specific error reasons
+    let mut errors = Vec::new();
+
+    if payload.email.trim().is_empty() {
+        errors.push("Email is required.");
+    }
+    if payload.full_name.trim().is_empty() {
+        errors.push("Full name is required.");
+    }
+    if payload.password.len() < 12 {
+        errors.push("Password must be at least 12 characters.");
+    }
+    if !payload.password.chars().any(|c| c.is_uppercase()) {
+        errors.push("Password must contain at least one uppercase letter.");
+    }
+    if !payload.password.chars().any(|c| c.is_lowercase()) {
+        errors.push("Password must contain at least one lowercase letter.");
+    }
+    if !payload.password.chars().any(|c| c.is_ascii_digit()) {
+        errors.push("Password must contain at least one digit.");
+    }
+    if !payload.password.chars().any(|c| !c.is_alphanumeric()) {
+        errors.push("Password must contain at least one special character.");
+    }
+
+    if !errors.is_empty() {
+        return Err((
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({ "errors": errors }))
+        ));
     }
 
     // Check if user already exists
-    if db.get_user_by_email(&payload.email).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?.is_some() {
-        return Err(StatusCode::CONFLICT);
+    if db.get_user_by_email(&payload.email).await.map_err(|_| (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        Json(serde_json::json!({"error": "Internal server error"}))
+    ))?.is_some() {
+        return Err((
+            StatusCode::CONFLICT,
+            Json(serde_json::json!({ "error": "Email already exists. Please use a different email." }))
+        ));
     }
 
     // Hash password
-    let password_hash = hash_password(&payload.password).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let password_hash = hash_password(&payload.password).map_err(|_| (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        Json(serde_json::json!({"error": "Failed to hash password"}))
+    ))?;
 
     // Create user
     let user = db.create_user(&payload.email, &password_hash, &payload.full_name)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|_| (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(serde_json::json!({"error": "Failed to create user"}))
+        ))?;
 
     let user_public = UserPublic {
         id: user.id,

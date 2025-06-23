@@ -7,10 +7,48 @@
     <link rel="stylesheet" href="/static/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* Modernized analytics dashboard layout and style */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header-content {
+            background: linear-gradient(120deg, #6366f1 0%, #7c3aed 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-content h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .user-info button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+        }
+        
+        .user-info button:hover {
+            background: #0056b3;
+        }
+        
         .analytics-container {
-            max-width: 1400px;
-            margin: 0 auto;
+            max-width: 1200px;
+            margin: 2rem auto;
             padding: 2rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
         .metrics-grid {
@@ -21,23 +59,25 @@
         }
         
         .metric-card {
-            background: white;
+            background: #ffffff;
             padding: 1.5rem;
             border-radius: 0.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 32px #6366f122, 0 2px 10px rgba(0,0,0,0.08);
             text-align: center;
         }
         
         .metric-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #667eea;
+            font-size: 2.4rem;
+            font-weight: 900;
+            color: #6366f1;
             margin-bottom: 0.5rem;
+            letter-spacing: -1px;
         }
         
         .metric-label {
-            color: #666;
-            font-size: 0.9rem;
+            color: #7c3aed;
+            font-size: 1.05rem;
+            font-weight: 600;
         }
         
         .charts-grid {
@@ -48,10 +88,10 @@
         }
         
         .chart-card {
-            background: white;
+            background: #ffffff;
             padding: 1.5rem;
             border-radius: 0.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 32px #6366f122, 0 2px 10px rgba(0,0,0,0.08);
         }
         
         .chart-title {
@@ -62,7 +102,7 @@
         }
         
         .data-table {
-            background: white;
+            background: #ffffff;
             border-radius: 0.5rem;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             overflow: hidden;
@@ -109,7 +149,7 @@
         }
         
         .refresh-btn {
-            background: #667eea;
+            background: #007bff;
             color: white;
             border: none;
             padding: 0.75rem 1.5rem;
@@ -119,7 +159,7 @@
         }
         
         .refresh-btn:hover {
-            background: #5a6fd8;
+            background: #0056b3;
         }
     </style>
 </head>

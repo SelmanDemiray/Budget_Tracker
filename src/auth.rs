@@ -10,6 +10,7 @@ use std::sync::Arc;
 use crate::database::Database;
 
 pub fn hash_password(password: &str) -> Result<String, bcrypt::BcryptError> {
+    // SECURITY: Use bcrypt with default cost (2^12 rounds), unique salt per user
     bcrypt::hash(password, bcrypt::DEFAULT_COST)
 }
 
@@ -18,11 +19,13 @@ pub fn verify_password(password: &str, hash: &str) -> Result<bool, bcrypt::Bcryp
 }
 
 pub fn create_session_cookie(user_id: Uuid) -> Cookie<'static> {
+    // SECURITY: Session cookie is HttpOnly, Secure, SameSite=Strict, 30 days expiry
     Cookie::build(("session_id", user_id.to_string()))
         .path("/")
         .max_age(time::Duration::days(30))
-        .same_site(SameSite::Lax)
-        .http_only(true)
+        .same_site(SameSite::Strict) // Strictest setting: only sent to same-site requests
+        .http_only(true) // Not accessible to JS
+        .secure(true)    // Only sent over HTTPS
         .build()
 }
 
