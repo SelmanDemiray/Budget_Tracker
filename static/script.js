@@ -357,6 +357,10 @@ function renderCategories() {
                 input.step = '0.01';
                 input.className = 'amount-input';
                 input.placeholder = '0.00';
+                // --- Make input easier for mobile numeric keyboard ---
+                input.setAttribute('inputmode', 'decimal');
+                input.setAttribute('pattern', '[0-9]*');
+                // --- End mobile numeric keyboard ---
 
                 const existingEntry = budgetData.find(entry =>
                     entry.category === category.name &&
@@ -368,6 +372,35 @@ function renderCategories() {
                     input.value = parseFloat(existingEntry.amount);
                     yearTotal += parseFloat(existingEntry.amount);
                 }
+
+                // --- Auto-select on focus for fast editing ---
+                input.addEventListener('focus', function(e) {
+                    setTimeout(() => input.select(), 10);
+                    // On mobile, scroll input into view
+                    if (window.innerWidth < 900) {
+                        setTimeout(() => {
+                            input.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                        }, 50);
+                    }
+                });
+                // --- Keyboard navigation between cells ---
+                input.addEventListener('keydown', function(e) {
+                    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', 'Tab'].includes(e.key)) {
+                        const allInputs = Array.from(document.querySelectorAll('.amount-input'));
+                        const idx = allInputs.indexOf(input);
+                        let nextIdx = idx;
+                        if (e.key === 'ArrowLeft') nextIdx = Math.max(0, idx - 1);
+                        if (e.key === 'ArrowRight') nextIdx = Math.min(allInputs.length - 1, idx + 1);
+                        if (e.key === 'ArrowUp') nextIdx = idx - 12 >= 0 ? idx - 12 : idx;
+                        if (e.key === 'ArrowDown') nextIdx = idx + 12 < allInputs.length ? idx + 12 : idx;
+                        if (nextIdx !== idx && allInputs[nextIdx]) {
+                            e.preventDefault();
+                            allInputs[nextIdx].focus();
+                        }
+                        // Enter/Tab: let default behavior
+                    }
+                });
+                // --- End keyboard navigation ---
 
                 input.addEventListener('blur', () => saveBudgetEntry(category.name, subcategory, month, input.value));
                 input.addEventListener('keypress', (e) => {

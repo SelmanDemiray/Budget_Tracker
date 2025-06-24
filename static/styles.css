@@ -511,321 +511,321 @@ h1 {
 
 .amount-input {
     width: 100%;
-    border: none;
-    padding: 0.6rem 0.3rem;
+    min-width: 60px;
+    border: 1.5px solid #e0e7ff;
+    padding: 0.8rem 0.5rem;
     text-align: right;
     font-family: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
-    font-size: 1rem;
-    background: transparent;
+    font-size: 1.1rem;
+    background: #f8fafc;
     color: var(--text);
-    border-radius: 0.3rem;
-    transition: background 0.2s;
+    border-radius: 0.4rem;
+    transition: background 0.2s, border 0.2s, box-shadow 0.2s;
+    outline: none;
+    box-shadow: 0 1px 4px #6366f111;
+    /* Make input always visible and easier to tap */
+    touch-action: manipulation;
 }
 .amount-input:focus {
-    outline: 2px solid var(--primary);
+    outline: 2.5px solid var(--primary);
     background: #e0e7ff;
     border: 2px solid var(--secondary);
+    box-shadow: 0 2px 12px #6366f122;
+    z-index: 2;
+    position: relative;
 }
 
-.year-total {
-    background: #f1f5f9;
-    padding: 0.8rem 1rem;
-    text-align: right;
-    font-weight: 700;
-    font-family: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
-    border-left: 2.5px solid var(--primary);
-    color: var(--primary);
-    border-radius: 0 0.5rem 0.5rem 0;
+/* --- Make subcategory row highlight on focus within --- */
+.subcategory-row:focus-within {
+    background: #e0e7ff33;
+    transition: background 0.15s;
 }
 
-/* --- Modernized Summary --- */
-.summary {
-    background: #fff;
-    padding: 2.2rem 2rem;
-    border-radius: var(--radius);
-    box-shadow: 0 8px 32px #6366f122, var(--shadow);
-    margin-bottom: 2.5rem;
-    border: 1.5px solid #e0e7ff;
+/* --- Make subcategory-name and amount-cell more touch-friendly --- */
+.subcategory-name, .amount-cell {
+    min-height: 48px;
+    cursor: pointer;
+    /* Increase tap area */
+}
+@media (max-width: 768px) {
+    .subcategory-name, .amount-cell {
+        min-height: 36px;
+        font-size: 0.9rem;
+    }
 }
 
-.summary-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.1rem 0;
-    border-bottom: 1.5px solid #e0e7ff;
-    font-size: 1.12rem;
-    font-weight: 600;
+/* --- Sticky month header on mobile for easier navigation --- */
+@media (max-width: 900px) {
+    .subcategory-grid {
+        overflow-x: auto;
+        position: relative;
+    }
+    .subcategory-grid .subcategory-row:first-child {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: #f1f5f9;
+    }
 }
 
-.summary-row:last-child {
-    border-bottom: none;
+/* --- Horizontal scroll hint for budget grid on mobile --- */
+@media (max-width: 900px) {
+    .budget-grid::after {
+        content: '← Scroll →';
+        display: block;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 0.95em;
+        margin: 0.5em 0 0.2em 0;
+        pointer-events: none;
+        user-select: none;
+    }
 }
 
-.summary-row.total {
-    font-size: 1.25rem;
-    font-weight: bold;
-    border-top: 2.5px solid var(--primary);
-    margin-top: 1.2rem;
-    padding-top: 1.2rem;
-    color: #6366f1;
-    background: linear-gradient(90deg, #f1f5f9 0%, #e0e7ff 100%);
+/* --- Make controls and search box easier to tap --- */
+.controls, .category-controls {
+    /* ...existing code... */
+    gap: 1.2rem;
 }
-
-.summary-value {
-    font-family: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-}
-
-.summary-value.income {
-    color: #10b981;
-}
-
-.summary-value.expense {
-    color: #ef4444;
-}
-
-/* --- Modernized Danger Zone --- */
-.danger-zone {
-    background: #fff1f2;
-    border: 2px solid #fecaca;
+.search-box {
+    font-size: 1.15rem;
+    padding: 1rem 1.2rem;
+    min-width: 180px;
     border-radius: 0.7rem;
-    padding: 1.7rem;
-    margin-top: 1.2rem;
-    box-shadow: 0 4px 16px #ef444422;
+}
+@media (max-width: 768px) {
+    .search-box {
+        font-size: 1rem;
+        padding: 0.7rem 0.7rem;
+    }
 }
 
-.danger-zone h3 {
-    color: #ef4444;
-    margin-bottom: 0.7rem;
+/* --- Make filter/collapse buttons larger for touch --- */
+.filter-btn, .collapse-all-btn {
+    font-size: 1.08rem;
+    padding: 0.8rem 1.4rem;
+    border-radius: 0.7rem;
+}
+@media (max-width: 768px) {
+    .filter-btn, .collapse-all-btn {
+        font-size: 1rem;
+        padding: 0.6rem 1rem;
+    }
+}
+
+/* --- Make amount input easier for mobile numeric keyboard --- */
+.amount-input[type="number"] {
     font-size: 1.2rem;
 }
-
-.danger-zone p {
-    color: #7f1d1d;
-    margin-bottom: 1.1rem;
-    line-height: 1.5;
+@media (max-width: 768px) {
+    .amount-input {
+        font-size: 1rem;
+        min-width: 38px;
+        padding: 0.5rem 0.2rem;
+    }
+    .amount-input[type="number"] {
+        font-size: 1.1rem;
+    }
 }
 
-.danger-btn {
-    background: linear-gradient(90deg, #ef4444 0%, #f87171 100%);
-    color: white;
-    border: none;
-    padding: 0.8rem 1.7rem;
-    border-radius: 0.7rem;
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 1.05rem;
-    transition: background 0.2s, transform 0.2s;
-    box-shadow: 0 2px 8px #ef444422;
+/* --- Dark Theme --- */
+body.dark-theme, .dark-theme .modern-header {
+    background: #181a20 !important;
+    color: #e5e7eb !important;
 }
-.danger-btn:hover {
-    background: linear-gradient(90deg, #b91c1c 0%, #ef4444 100%);
-    transform: translateY(-1px) scale(1.03);
+.dark-theme .modal-content,
+.dark-theme .security-modal-content {
+    background: linear-gradient(120deg, #23263a 0%, #181a20 100%) !important;
+    color: #e5e7eb !important;
+    box-shadow: 0 12px 48px #23263a88, 0 0 0 8px #23263a44;
+}
+.dark-theme .auth-form input,
+.dark-theme .search-box,
+.dark-theme .year-selector select {
+    background: #23263a !important;
+    color: #e5e7eb !important;
+    border-color: #334155 !important;
+}
+.dark-theme .auth-form input:focus,
+.dark-theme .search-box:focus,
+.dark-theme .year-selector select:focus {
+    background: #181a20 !important;
+    border-color: #6366f1 !important;
+}
+.dark-theme .auth-form button,
+.dark-theme #guestBtn,
+.dark-theme .analytics-btn,
+.dark-theme .filter-btn,
+.dark-theme .collapse-all-btn {
+    background: linear-gradient(90deg, #23263a 0%, #6366f1 100%) !important;
+    color: #fff !important;
+    border-color: #6366f1 !important;
+}
+.dark-theme .auth-form button:hover,
+.dark-theme #guestBtn:hover,
+.dark-theme .analytics-btn:hover,
+.dark-theme .filter-btn:hover,
+.dark-theme .collapse-all-btn:hover {
+    background: linear-gradient(90deg, #6366f1 0%, #23263a 100%) !important;
+    color: #fff !important;
+}
+.dark-theme .modal-content .auth-modal-close {
+    color: #a5b4fc !important;
+}
+.dark-theme .modal-content .auth-modal-close:hover {
+    color: #fff !important;
+}
+.dark-theme .auth-modal-info {
+    color: #a5b4fc !important;
+}
+.dark-theme .subcategory-grid,
+.dark-theme .category-section,
+.dark-theme .budget-grid,
+.dark-theme .summary,
+.dark-theme .danger-zone {
+    background: #23263a !important;
+    color: #e5e7eb !important;
+    border-color: #334155 !important;
+}
+.dark-theme .subcategory-name,
+.dark-theme .amount-cell,
+.dark-theme .year-total {
+    background: #181a20 !important;
+    color: #e5e7eb !important;
+}
+.dark-theme .month-header {
+    background: #6366f1 !important;
+    color: #fff !important;
+}
+.dark-theme .month-header.current-month,
+.dark-theme .amount-cell.current-month {
+    background: linear-gradient(120deg, #fde04733 0%, #fde04722 100%) !important;
+    color: #fde047 !important;
+    border-color: #fde047 !important;
+}
+.dark-theme .app-logo {
+    background: #23263a !important;
+    box-shadow: 0 8px 32px #23263a44, 0 2px 10px #181a2044;
+}
+.dark-theme .modern-app-title {
+    color: #a5b4fc !important;
+}
+.dark-theme .theme-switcher {
+    background: #23263a !important;
+    color: #a5b4fc !important;
+}
+.dark-theme .theme-switcher:hover {
+    background: #6366f1 !important;
+    color: #fff !important;
+}
+.dark-theme .user-avatar {
+    background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%) !important;
+    color: #fff !important;
+}
+.dark-theme .floating-security-badge {
+    background: linear-gradient(90deg, #23263a 0%, #06d6a0 100%) !important;
+    color: #fff !important;
+    border-color: #06d6a0 !important;
+}
+.dark-theme .security-badge {
+    background: linear-gradient(90deg, #23263a 0%, #06d6a0 100%) !important;
+    color: #fff !important;
+    border-color: #06d6a0 !important;
+}
+.dark-theme .security-highlight {
+    background: linear-gradient(90deg, #06d6a022 0%, #23263a22 100%) !important;
+    color: #fff !important;
+    border-left: 7px solid #06d6a0 !important;
+}
+.dark-theme .danger-zone {
+    background: #7f1d1d22 !important;
+    border-color: #ef4444 !important;
+    color: #fff !important;
+}
+.dark-theme .danger-btn {
+    background: linear-gradient(90deg, #ef4444 0%, #b91c1c 100%) !important;
+    color: #fff !important;
+}
+.dark-theme .danger-btn:hover {
+    background: linear-gradient(90deg, #b91c1c 0%, #ef4444 100%) !important;
+    color: #fff !important;
 }
 
-/* --- Modernized Security Badge --- */
-.security-badge {
-    display: flex;
-    align-items: center;
-    background: linear-gradient(90deg, #06d6a0 0%, #64ffda 100%);
-    color: #1e293b;
-    font-weight: bold;
-    border-radius: 2.7rem;
-    padding: 0.6rem 1.5rem;
-    margin-left: 2rem;
-    box-shadow: 0 2px 12px #06d6a022;
-    cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
-    border: 2.5px solid #06d6a0;
-    font-size: 1.12rem;
-    z-index: 100;
-    animation: pulse-badge 2s infinite;
-}
-.security-badge:hover {
-    transform: scale(1.07);
-    box-shadow: 0 4px 24px #06d6a044;
-    border-color: #64ffda;
-}
-.lock-icon {
-    font-size: 1.4rem;
-    margin-right: 0.7rem;
-}
-.badge-text {
-    font-size: 1.05rem;
-    letter-spacing: 0.02em;
-}
-.security-badge.prominent {
-    background: linear-gradient(90deg, #06d6a0 0%, #64ffda 100%);
-    color: #1e293b;
-    font-weight: bold;
-    border-radius: 2.7rem;
-    padding: 0.8rem 2.2rem;
-    margin-left: 2rem;
-    box-shadow: 0 6px 32px #06d6a044, 0 0 0 4px #06d6a044;
-    border: 3.5px solid #06d6a0;
-    font-size: 1.18rem;
-    z-index: 200;
-    animation: pulse-badge 1.5s infinite;
+/* --- Modal Modernization --- */
+.modal-content {
+    /* ...existing code... */
     position: relative;
-    transition: transform 0.18s, box-shadow 0.18s;
+    /* ...existing code... */
 }
-.security-badge.prominent:hover {
-    transform: scale(1.09) rotate(-1deg);
-    box-shadow: 0 12px 48px #06d6a055, 0 0 0 8px #64ffda44;
-    border-color: #64ffda;
+
+/* Fix bottom area of auth modal */
+.auth-modal-bottom {
+    margin-top: 1.5em;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7em;
+    position: relative;
 }
-.badge-new {
-    background: #ef4444;
-    color: #fff;
-    font-size: 0.8rem;
-    font-weight: bold;
-    border-radius: 1.2rem;
-    padding: 0.18rem 0.8rem;
-    margin-left: 0.8rem;
-    letter-spacing: 0.05em;
-    box-shadow: 0 2px 8px #ef444422;
-    animation: badge-pop 1s infinite alternate;
+
+/* Style for the close button in modal (top-right corner) */
+.auth-modal-close {
     position: absolute;
-    top: -0.8rem;
-    right: -1.3rem;
-}
-@keyframes badge-pop {
-    0% { transform: scale(1); }
-    100% { transform: scale(1.15); }
-}
-
-/* --- Modernized Security Modal --- */
-.security-modal-content {
-    background: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%);
-    border: 3.5px solid #06d6a0;
-    box-shadow: 0 24px 64px #06d6a044, 0 0 0 8px #64ffda22;
-    max-width: 750px;
-    color: #1e293b;
-    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
-    animation: modal-fadein 0.4s;
-    border-radius: var(--radius);
-    padding: 2.5rem 2.2rem;
-    max-height: 90vh;      /* Prevent modal from exceeding viewport */
-    overflow-y: auto;      /* Scroll inside modal if content is too tall */
-    margin: 5vh auto;      /* Center vertically with margin */
-}
-
-.security-details h3 {
-    color: #06d6a0;
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
-    text-shadow: 0 2px 8px #06d6a022;
-}
-.security-details ul {
-    margin-left: 1.7rem;
-    margin-bottom: 1.5rem;
-    font-size: 1.12em;
-}
-.security-details li {
-    margin-bottom: 1.2rem;
-    line-height: 1.7;
-    font-weight: 500;
-}
-.security-details b, .security-details strong {
-    color: #7c3aed;
-}
-.security-details a {
-    color: #6366f1;
-    text-decoration: underline;
-}
-.security-details ul ul {
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-}
-.security-details ul ul li {
-    font-size: 0.98em;
-    color: #64748b;
-}
-.security-highlight {
-    background: linear-gradient(90deg, #06d6a022 0%, #64ffda22 100%);
-    border-left: 7px solid #06d6a0;
-    padding: 1.4rem 1.7rem;
-    margin: 1.7rem 0 0.7rem 0;
-    font-size: 1.15em;
-    font-weight: bold;
-    color: #1e293b;
-    border-radius: 0.8rem;
-    box-shadow: 0 2px 12px #06d6a011;
-}
-
-/* Category toggle functionality */
-.category-toggle {
+    top: 1.1rem;
+    right: 1.3rem;
     background: none;
     border: none;
-    color: inherit;
-    font: inherit;
+    font-size: 2.2rem;
+    color: #64748b;
     cursor: pointer;
-    display: flex;
-    align-items: center;
+    z-index: 10;
+    transition: color 0.2s;
+    line-height: 1;
+    padding: 0;
+}
+.auth-modal-close:hover {
+    color: #6366f1;
+}
+
+/* Make guest/demo button more prominent */
+#guestBtn {
     width: 100%;
-    text-align: left;
+    background: linear-gradient(90deg, #06d6a0 0%, #64ffda 100%);
+    color: #1e293b;
+    font-weight: 800;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 0.7rem;
+    padding: 1.1rem 0;
+    margin-bottom: 0.5em;
+    box-shadow: 0 2px 12px #06d6a022;
+    transition: background 0.18s, color 0.18s, transform 0.18s;
+    letter-spacing: 0.01em;
+    outline: none;
+}
+#guestBtn:hover {
+    background: linear-gradient(90deg, #64ffda 0%, #06d6a0 100%);
+    color: #0f172a;
+    transform: scale(1.03);
 }
 
-.category-toggle::before {
-    content: '▼';
-    margin-right: 0.5rem;
-    transition: transform 0.2s ease;
+/* Info text below guest button */
+.auth-modal-info {
+    font-size: 0.98em;
+    color: #64748b;
+    margin-top: 0.5em;
+    margin-bottom: 0.2em;
+    text-align: center;
+    max-width: 90%;
 }
-
-.category-toggle.collapsed::before {
-    transform: rotate(-90deg);
-}
-
-.subcategory-grid.collapsed {
-    display: none;
-}
-
-/* Better mobile responsiveness */
-@media (max-width: 1200px) {
-    .subcategory-grid {
-        grid-template-columns: 180px repeat(12, 60px) auto;
-        font-size: 0.92rem;
-    }
-    .subcategory-name {
-        font-size: 0.85rem;
-        padding: 0.6rem 0.7rem;
-    }
-    .controls, .category-controls {
-        padding: 0 1rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .subcategory-grid {
-        grid-template-columns: 120px repeat(12, 38px) auto;
-        font-size: 0.8rem;
-    }
-    .month-header {
-        font-size: 0.6rem;
-        padding: 0.3rem 0.1rem;
-    }
-    .amount-input {
-        font-size: 0.7rem;
-        padding: 0.15rem;
-    }
-    .subcategory-name {
-        font-size: 0.7rem;
-        padding: 0.3rem 0.5rem;
-        line-height: 1.2;
-    }
-    .controls, .category-controls {
-        flex-direction: column;
-        gap: 0.7rem;
-        padding: 0 0.5rem;
-    }
-    .modal-content, .security-modal-content {
-        padding: 1.2rem 0.5rem;
-        box-shadow: 0 4px 24px #6366f122;
-        max-height: 95vh;
-        margin: 2vh auto;
-    }
+.auth-modal-info {
+    font-size: 0.98em;
+    color: #64748b;
+    margin-top: 0.5em;
+    margin-bottom: 0.2em;
+    text-align: center;
+    max-width: 90%;
 }
 
 /* Search and filter functionality */
@@ -1159,5 +1159,11 @@ body.dark-theme, .dark-theme .modern-header {
     text-align: center;
     max-width: 90%;
 }
-
-/* ...existing code... */
+.auth-modal-info {
+    font-size: 0.98em;
+    color: #64748b;
+    margin-top: 0.5em;
+    margin-bottom: 0.2em;
+    text-align: center;
+    max-width: 90%;
+}
