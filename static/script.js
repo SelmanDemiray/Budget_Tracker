@@ -289,144 +289,6 @@ function renderBudgetGrid() {
     renderCategories();
 }
 
-function renderCategories() {
-    const grid = document.getElementById('budgetGrid');
-    const existingControls = grid.querySelector('.category-controls');
-    grid.innerHTML = '';
-    if (existingControls) {
-        grid.appendChild(existingControls);
-    }
-
-    // Determine current month and selected year
-    const now = new Date();
-    const selectedYear = parseInt(document.getElementById('yearSelect').value);
-    const currentMonth = (now.getFullYear() === selectedYear) ? now.getMonth() + 1 : null;
-
-    filteredCategories.forEach(category => {
-        const section = document.createElement('div');
-        section.className = `category-section ${category.is_income ? 'income' : 'expense'}`;
-        section.setAttribute('data-category', category.name.toLowerCase());
-
-        const header = document.createElement('div');
-        header.className = 'category-header';
-
-        const toggleBtn = document.createElement('button');
-        toggleBtn.className = `category-toggle ${collapsedCategories.has(category.name) ? 'collapsed' : ''}`;
-        toggleBtn.innerHTML = `${category.name} <span class="subcategory-count">(${category.subcategories.length} items)</span>`;
-        toggleBtn.addEventListener('click', () => toggleCategory(category.name));
-
-        header.appendChild(toggleBtn);
-        section.appendChild(header);
-
-        const subcategoryGrid = document.createElement('div');
-        subcategoryGrid.className = `subcategory-grid ${collapsedCategories.has(category.name) ? 'collapsed' : ''}`;
-
-        // Header row
-        const headerRow = document.createElement('div');
-        headerRow.className = 'subcategory-row';
-        headerRow.innerHTML = `
-            <div class="subcategory-name"><strong>Subcategory</strong></div>
-            ${months.map((month, idx) => 
-                `<div class="month-header${currentMonth === idx + 1 ? ' current-month' : ''}">${month}</div>`
-            ).join('')}
-            <div class="month-header">TOTAL</div>
-        `;
-        subcategoryGrid.appendChild(headerRow);
-
-        // Subcategory rows
-        category.subcategories.forEach(subcategory => {
-            const row = document.createElement('div');
-            row.className = 'subcategory-row';
-            row.setAttribute('data-subcategory', subcategory.toLowerCase());
-
-            const nameCell = document.createElement('div');
-            nameCell.className = 'subcategory-name';
-            nameCell.textContent = subcategory;
-            nameCell.title = subcategory; // Tooltip for long names
-            row.appendChild(nameCell);
-
-            let yearTotal = 0;
-
-            // Month cells
-            for (let month = 1; month <= 12; month++) {
-                const cell = document.createElement('div');
-                cell.className = 'amount-cell' + (currentMonth === month ? ' current-month' : '');
-
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.step = '0.01';
-                input.className = 'amount-input';
-                input.placeholder = '0.00';
-                // --- Make input easier for mobile numeric keyboard ---
-                input.setAttribute('inputmode', 'decimal');
-                input.setAttribute('pattern', '[0-9]*');
-                // --- End mobile numeric keyboard ---
-
-                const existingEntry = budgetData.find(entry =>
-                    entry.category === category.name &&
-                    entry.subcategory === subcategory &&
-                    entry.month === month
-                );
-
-                if (existingEntry) {
-                    input.value = parseFloat(existingEntry.amount);
-                    yearTotal += parseFloat(existingEntry.amount);
-                }
-
-                // --- Auto-select on focus for fast editing ---
-                input.addEventListener('focus', function(e) {
-                    setTimeout(() => input.select(), 10);
-                    // On mobile, scroll input into view
-                    if (window.innerWidth < 900) {
-                        setTimeout(() => {
-                            input.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-                        }, 50);
-                    }
-                });
-                // --- Keyboard navigation between cells ---
-                input.addEventListener('keydown', function(e) {
-                    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', 'Tab'].includes(e.key)) {
-                        const allInputs = Array.from(document.querySelectorAll('.amount-input'));
-                        const idx = allInputs.indexOf(input);
-                        let nextIdx = idx;
-                        if (e.key === 'ArrowLeft') nextIdx = Math.max(0, idx - 1);
-                        if (e.key === 'ArrowRight') nextIdx = Math.min(allInputs.length - 1, idx + 1);
-                        if (e.key === 'ArrowUp') nextIdx = idx - 12 >= 0 ? idx - 12 : idx;
-                        if (e.key === 'ArrowDown') nextIdx = idx + 12 < allInputs.length ? idx + 12 : idx;
-                        if (nextIdx !== idx && allInputs[nextIdx]) {
-                            e.preventDefault();
-                            allInputs[nextIdx].focus();
-                        }
-                        // Enter/Tab: let default behavior
-                    }
-                });
-                // --- End keyboard navigation ---
-
-                input.addEventListener('blur', () => saveBudgetEntry(category.name, subcategory, month, input.value));
-                input.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        input.blur();
-                    }
-                });
-
-                cell.appendChild(input);
-                row.appendChild(cell);
-            }
-
-            // Year total cell
-            const totalCell = document.createElement('div');
-            totalCell.className = 'year-total';
-            totalCell.textContent = formatCurrency(yearTotal);
-            row.appendChild(totalCell);
-
-            subcategoryGrid.appendChild(row);
-        });
-
-        section.appendChild(subcategoryGrid);
-        grid.appendChild(section);
-    });
-}
-
 function handleSearch(event) {
     const searchTerm = event.target.value.toLowerCase();
     
@@ -434,47 +296,31 @@ function handleSearch(event) {
         filteredCategories = [...categories];
     } else {
         filteredCategories = categories.filter(category => {
-            const categoryMatch = category.name.toLowerCase().includes(searchTerm);
-            const subcategoryMatch = category.subcategories.some(sub => 
+            // Search in category name
+            if (category.name.toLowerCase().includes(searchTerm)) {
+                return true;
+            }
+            // Search in subcategories
+            return category.subcategories.some(sub => 
                 sub.toLowerCase().includes(searchTerm)
             );
-            return categoryMatch || subcategoryMatch;
-        }).map(category => {
-            if (category.name.toLowerCase().includes(searchTerm)) {
-                return category;
-            } else {
-                // Filter subcategories that match the search
-                return {
-                    ...category,
-                    subcategories: category.subcategories.filter(sub => 
-                        sub.toLowerCase().includes(searchTerm)
-                    )
-                };
-            }
         });
     }
     
     renderCategories();
-    highlightSearchResults(searchTerm);
-}
-
-function highlightSearchResults(searchTerm) {
-    if (searchTerm === '') return;
-    
-    document.querySelectorAll('.subcategory-name').forEach(element => {
-        const text = element.textContent;
-        const regex = new RegExp(`(${searchTerm})`, 'gi');
-        element.innerHTML = text.replace(regex, '<mark>$1</mark>');
-    });
 }
 
 function handleFilter(event) {
-    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    const filterType = event.target.dataset.filter;
+    
+    // Update active button
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
     event.target.classList.add('active');
     
-    const filter = event.target.getAttribute('data-filter');
-    
-    switch (filter) {
+    // Filter categories
+    switch (filterType) {
         case 'income':
             filteredCategories = categories.filter(cat => cat.is_income);
             break;
@@ -488,6 +334,216 @@ function handleFilter(event) {
     renderCategories();
 }
 
+function toggleCollapseAll() {
+    const btn = document.getElementById('collapseAllBtn');
+    const isCollapsing = btn.textContent.includes('Collapse');
+    
+    if (isCollapsing) {
+        // Collapse all
+        categories.forEach(category => {
+            collapsedCategories.add(category.name);
+        });
+        btn.textContent = 'Expand All';
+    } else {
+        // Expand all
+        collapsedCategories.clear();
+        btn.textContent = 'Collapse All';
+    }
+    
+    renderCategories();
+}
+
+function renderCategories() {
+    const grid = document.getElementById('budgetGrid');
+    const existingControls = grid.querySelector('.category-controls');
+    grid.innerHTML = '';
+    if (existingControls) {
+        grid.appendChild(existingControls);
+    }
+
+    // Determine current month and selected year
+    const now = new Date();
+    const selectedYear = parseInt(document.getElementById('yearSelect').value);
+    const currentMonth = (now.getFullYear() === selectedYear) ? now.getMonth() + 1 : null;
+
+    filteredCategories.forEach((category, categoryIndex) => {
+        const section = document.createElement('div');
+        section.className = `category-section ${category.is_income ? 'income' : 'expense'}`;
+        section.setAttribute('data-category', category.name.toLowerCase());
+
+        const header = document.createElement('div');
+        header.className = 'category-header';
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = `category-toggle ${collapsedCategories.has(category.name) ? 'collapsed' : ''}`;
+        toggleBtn.innerHTML = `
+            ${category.name} 
+            <span class="subcategory-count">${category.subcategories.length} items</span>
+        `;
+        toggleBtn.addEventListener('click', () => toggleCategory(category.name));
+
+        header.appendChild(toggleBtn);
+        section.appendChild(header);
+
+        const subcategoryGrid = document.createElement('div');
+        subcategoryGrid.className = `subcategory-grid ${collapsedCategories.has(category.name) ? 'collapsed' : ''}`;
+
+        // Header row with month labels
+        const headerRow = document.createElement('div');
+        headerRow.className = 'subcategory-row';
+        headerRow.innerHTML = `
+            <div class="subcategory-name">
+                <strong>Subcategory</strong>
+            </div>
+            <div class="month-inputs">
+                ${months.map((month, idx) => 
+                    `<div class="month-input-group">
+                        <div class="month-label ${currentMonth === idx + 1 ? 'current-month' : ''}">${month}</div>
+                    </div>`
+                ).join('')}
+            </div>
+        `;
+        subcategoryGrid.appendChild(headerRow);
+
+        // Subcategory rows
+        category.subcategories.forEach((subcategory, subIndex) => {
+            const row = document.createElement('div');
+            row.className = 'subcategory-row';
+            row.setAttribute('data-subcategory', subcategory.toLowerCase());
+
+            const nameCell = document.createElement('div');
+            nameCell.className = 'subcategory-name';
+            nameCell.textContent = subcategory;
+            row.appendChild(nameCell);
+
+            // Month inputs container
+            const monthInputsContainer = document.createElement('div');
+            monthInputsContainer.className = 'month-inputs';
+
+            let yearTotal = 0;
+
+            // Create month inputs
+            for (let month = 1; month <= 12; month++) {
+                const monthGroup = document.createElement('div');
+                monthGroup.className = 'month-input-group';
+
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.step = '0.01';
+                input.className = `amount-input ${currentMonth === month ? 'current-month' : ''}`;
+                input.placeholder = '0.00';
+                input.setAttribute('inputmode', 'decimal');
+
+                const existingEntry = budgetData.find(entry =>
+                    entry.category === category.name &&
+                    entry.subcategory === subcategory &&
+                    entry.month === month
+                );
+
+                if (existingEntry) {
+                    const amount = parseFloat(existingEntry.amount);
+                    input.value = amount;
+                    yearTotal += amount;
+                    if (amount !== 0) {
+                        input.classList.add('has-value');
+                    }
+                }
+
+                // Input event handlers
+                input.addEventListener('focus', function() {
+                    setTimeout(() => {
+                        input.select();
+                        row.classList.add('editing');
+                    }, 10);
+                });
+
+                input.addEventListener('blur', function() {
+                    row.classList.remove('editing');
+                    const value = parseFloat(input.value) || 0;
+                    
+                    if (value !== 0) {
+                        input.classList.add('has-value');
+                    } else {
+                        input.classList.remove('has-value');
+                    }
+                    
+                    saveBudgetEntry(category.name, subcategory, month, input.value);
+                });
+
+                input.addEventListener('input', function() {
+                    const value = parseFloat(input.value) || 0;
+                    if (value !== 0) {
+                        input.classList.add('has-value');
+                    } else {
+                        input.classList.remove('has-value');
+                    }
+                    
+                    updateRowYearTotal(row);
+                });
+
+                // Keyboard navigation
+                input.addEventListener('keydown', function(e) {
+                    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', 'Tab'].includes(e.key)) {
+                        const allInputs = Array.from(document.querySelectorAll('.amount-input'));
+                        const idx = allInputs.indexOf(input);
+                        let nextIdx = idx;
+                        
+                        if (e.key === 'ArrowLeft') nextIdx = Math.max(0, idx - 1);
+                        if (e.key === 'ArrowRight') nextIdx = Math.min(allInputs.length - 1, idx + 1);
+                        if (e.key === 'ArrowUp') nextIdx = idx - 12 >= 0 ? idx - 12 : idx;
+                        if (e.key === 'ArrowDown') nextIdx = idx + 12 < allInputs.length ? idx + 12 : idx;
+                        
+                        if (nextIdx !== idx && allInputs[nextIdx]) {
+                            e.preventDefault();
+                            allInputs[nextIdx].focus();
+                        }
+                    }
+                });
+
+                monthGroup.appendChild(input);
+                monthInputsContainer.appendChild(monthGroup);
+            }
+
+            row.appendChild(monthInputsContainer);
+
+            // Year total display
+            const yearTotalDisplay = document.createElement('div');
+            yearTotalDisplay.className = 'year-total-display';
+            yearTotalDisplay.innerHTML = `
+                <div class="year-total-label">Year Total</div>
+                <div class="year-total-amount ${yearTotal >= 0 ? 'positive' : 'negative'}">${formatCurrency(yearTotal)}</div>
+            `;
+            row.appendChild(yearTotalDisplay);
+
+            subcategoryGrid.appendChild(row);
+        });
+
+        section.appendChild(subcategoryGrid);
+        grid.appendChild(section);
+    });
+}
+
+function updateRowYearTotal(row) {
+    const inputs = row.querySelectorAll('.amount-input');
+    let total = 0;
+    
+    inputs.forEach(input => {
+        total += parseFloat(input.value) || 0;
+    });
+    
+    const totalDisplay = row.querySelector('.year-total-amount');
+    if (totalDisplay) {
+        totalDisplay.textContent = formatCurrency(total);
+        totalDisplay.className = `year-total-amount ${total >= 0 ? 'positive' : 'negative'}`;
+        
+        // Add update animation
+        totalDisplay.style.transform = 'scale(1.1)';
+        setTimeout(() => {
+            totalDisplay.style.transform = 'scale(1)';
+        }, 200);
+    }
+}
+
 function toggleCategory(categoryName) {
     if (collapsedCategories.has(categoryName)) {
         collapsedCategories.delete(categoryName);
@@ -499,30 +555,38 @@ function toggleCategory(categoryName) {
     const toggle = section.querySelector('.category-toggle');
     const grid = section.querySelector('.subcategory-grid');
     
+    // Enhanced toggle animation
     toggle.classList.toggle('collapsed');
-    grid.classList.toggle('collapsed');
-}
-
-function toggleCollapseAll() {
-    const btn = document.getElementById('collapseAllBtn');
-    const isCollapsing = btn.textContent === 'Collapse All';
     
-    if (isCollapsing) {
-        categories.forEach(category => collapsedCategories.add(category.name));
-        btn.textContent = 'Expand All';
+    if (grid.classList.contains('collapsed')) {
+        grid.classList.remove('collapsed');
+        // Expand animation
+        grid.style.maxHeight = grid.scrollHeight + 'px';
+        setTimeout(() => {
+            grid.style.maxHeight = 'none';
+        }, 400);
     } else {
-        collapsedCategories.clear();
-        btn.textContent = 'Collapse All';
+        grid.classList.add('collapsed');
+        // Collapse animation
+        grid.style.maxHeight = grid.scrollHeight + 'px';
+        requestAnimationFrame(() => {
+            grid.style.maxHeight = '0';
+        });
     }
-    
-    renderCategories();
 }
 
 async function saveBudgetEntry(category, subcategory, month, amount) {
     const year = parseInt(document.getElementById('yearSelect').value);
     const numAmount = parseFloat(amount) || 0;
+    
+    // Add loading state
+    const row = document.querySelector(`[data-subcategory="${subcategory.toLowerCase()}"]`);
+    if (row) {
+        row.classList.add('loading');
+        setTimeout(() => row.classList.remove('loading'), 500);
+    }
+    
     if (isGuest) {
-        // Demo: Save to local variable only
         const existingIndex = budgetData.findIndex(entry => 
             entry.category === category && 
             entry.subcategory === subcategory && 
@@ -540,9 +604,9 @@ async function saveBudgetEntry(category, subcategory, month, amount) {
             });
         }
         updateSummary();
-        updateYearTotals();
         return;
     }
+    
     try {
         await fetch('/api/budget', {
             method: 'POST',
@@ -557,7 +621,6 @@ async function saveBudgetEntry(category, subcategory, month, amount) {
             })
         });
         
-        // Update local data
         const existingIndex = budgetData.findIndex(entry => 
             entry.category === category && 
             entry.subcategory === subcategory && 
@@ -577,9 +640,15 @@ async function saveBudgetEntry(category, subcategory, month, amount) {
         }
         
         updateSummary();
-        updateYearTotals();
     } catch (error) {
         console.error('Failed to save budget entry:', error);
+        // Show error feedback
+        if (row) {
+            row.style.background = '#fee2e2';
+            setTimeout(() => {
+                row.style.background = '';
+            }, 2000);
+        }
     }
 }
 
