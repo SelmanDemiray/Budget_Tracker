@@ -414,6 +414,27 @@ function renderCategories() {
             nameCell.textContent = subcategory;
             row.appendChild(nameCell);
 
+            // Autofill button for bulk entry
+            const autofillBtn = document.createElement('button');
+            autofillBtn.textContent = 'Fill All';
+            autofillBtn.className = 'autofill-btn';
+            autofillBtn.title = 'Fill all months with a value';
+            autofillBtn.style.marginLeft = '8px';
+            autofillBtn.onclick = () => {
+                const value = prompt('Enter amount to fill all months:');
+                if (value !== null && !isNaN(value)) {
+                    const numValue = parseFloat(value) || 0;
+                    row.querySelectorAll('.amount-input').forEach((input, idx) => {
+                        input.value = numValue;
+                        input.classList.toggle('has-value', numValue !== 0);
+                        // Save for each month
+                        saveBudgetEntry(category.name, subcategory, idx + 1, numValue);
+                        updateRowYearTotal(row);
+                    });
+                }
+            };
+            nameCell.appendChild(autofillBtn);
+
             // Month inputs container
             const monthInputsContainer = document.createElement('div');
             monthInputsContainer.className = 'month-inputs';
