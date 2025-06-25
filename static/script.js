@@ -263,12 +263,12 @@ async function loadBudget() {
 function renderBudgetGrid() {
     const grid = document.getElementById('budgetGrid');
     grid.innerHTML = '';
-    
-    // Add category controls
+
+    // Modernized category controls layout
     const controlsDiv = document.createElement('div');
     controlsDiv.className = 'category-controls';
     controlsDiv.innerHTML = `
-        <input type="text" class="search-box" placeholder="Search categories and subcategories..." id="categorySearch">
+        <input type="text" class="search-box" placeholder="Search categories or subcategories..." id="categorySearch" />
         <div class="filter-buttons">
             <button class="filter-btn active" data-filter="all">All</button>
             <button class="filter-btn" data-filter="income">Income</button>
