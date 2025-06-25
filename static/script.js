@@ -392,9 +392,7 @@ function renderCategories() {
         const headerRow = document.createElement('div');
         headerRow.className = 'subcategory-row';
         headerRow.innerHTML = `
-            <div class="subcategory-name">
-                <strong>Subcategory</strong>
-            </div>
+            <div class="subcategory-name"></div>
             <div class="month-inputs">
                 ${months.map((month, idx) => 
                     `<div class="month-input-group">

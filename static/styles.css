@@ -1239,3 +1239,90 @@ body.dark-theme, .dark-theme .modern-header {
     text-align: center;
     max-width: 90%;
 }
+
+/* --- Modern Summary Cards --- */
+.summary {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: 2.2rem;
+    margin: 2.5rem auto 0 auto;
+    max-width: 700px;
+    background: none;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+}
+
+.summary-row {
+    flex: 1 1 0;
+    background: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%);
+    border-radius: 1.2rem;
+    box-shadow: 0 4px 16px #6366f110, 0 1.5px 0 #e0e7ff;
+    padding: 1.5rem 1.2rem 1.2rem 1.2rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 160px;
+    border: 2px solid #e0e7ff;
+    position: relative;
+    transition: box-shadow 0.2s, border 0.2s;
+}
+
+.summary-row.total {
+    background: linear-gradient(120deg, #6366f1 0%, #7c3aed 100%);
+    color: #fff;
+    border: 2px solid #6366f1;
+    box-shadow: 0 8px 32px #6366f122;
+}
+
+.summary-label {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 0.7rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.summary-row.total .summary-label {
+    color: #fff;
+    opacity: 0.92;
+}
+
+.summary-value {
+    font-size: 2.1rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    color: #6366f1;
+    font-family: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
+    margin-bottom: 0;
+    margin-top: 0.2rem;
+    transition: color 0.2s;
+}
+
+.summary-value.income {
+    color: #10b981;
+}
+
+.summary-value.expense {
+    color: #ef4444;
+}
+
+.summary-row.total .summary-value {
+    color: #fff !important;
+    text-shadow: 0 2px 12px #6366f122;
+}
+
+@media (max-width: 900px) {
+    .summary {
+        flex-direction: column;
+        gap: 1.2rem;
+        max-width: 98vw;
+    }
+    .summary-row {
+        min-width: 0;
+        width: 100%;
+    }
+}
