@@ -604,75 +604,82 @@ h1 {
     margin-bottom: 1rem;
 }
 
-.month-input-group {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    /* Modern separation for each month cell */
-    background: none;
-    border-radius: 0.7rem;
-    box-shadow: none;
-    padding: 0;
-}
-
-.month-label {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: #6366f1;
-    margin-bottom: 0.35rem;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    opacity: 0.85;
-    background: none;
-    border: none;
-    box-shadow: none;
-    padding: 0;
-    transition: color 0.2s;
-    /* Always show above its input */
-    display: block;
-}
-
-.month-label.current-month {
-    color: #f59e0b;
-    font-weight: 800;
-    opacity: 1;
-    letter-spacing: 0.7px;
-}
-
-/* Hide the header row's month labels and header row itself on mobile */
+/* --- MOBILE MONTH GRID IMPROVEMENTS --- */
 @media (max-width: 768px) {
+    .budget-grid {
+        padding: 0.5rem 0.5rem 1.5rem 0.5rem;
+        margin: 0;
+        border-radius: 1rem;
+        background: #fff;
+        border: 1.5px solid #e0e7ff;
+        box-shadow: 0 2px 8px #6366f111;
+        overflow-x: visible;
+    }
+    .category-section {
+        margin-bottom: 1.1rem;
+        border-radius: 0.8rem;
+        padding: 0.2rem 0.2rem 0.7rem 0.2rem;
+        box-shadow: 0 2px 8px #6366f111;
+    }
+    .subcategory-grid {
+        padding: 0.5rem 0.1rem 0.5rem 0.1rem;
+        border-radius: 0.7rem;
+        background: #f8fafc;
+        overflow-x: visible;
+        min-width: 0;
+    }
+    .subcategory-row {
+        padding: 0.7rem 0.5rem 0.7rem 0.5rem;
+        margin-bottom: 0.7rem;
+        border-radius: 0.7rem;
+        box-shadow: 0 1px 4px #6366f111;
+        min-width: 0;
+        background: #fff;
+        border: 1px solid #e0e7ff;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
     .subcategory-row.month-header-row {
         display: none !important;
     }
-    .month-inputs {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.6rem;
-    }
-    .month-input-group {
-        flex-direction: column;
-        align-items: stretch;
-        /* Add subtle separation for mobile clarity */
-        background: #f8fafc;
-        border-radius: 0.7rem;
-        box-shadow: 0 1px 4px #6366f111;
-        margin-bottom: 0.1rem;
-        padding: 0.2rem 0.1rem;
-    }
-    .amount-input {
-        font-size: 1rem;
-        padding: 0.7rem 0.5rem;
-        border-radius: 0.7rem;
-    }
-    .month-label {
-        font-size: 0.82rem;
-        margin-bottom: 0.2rem;
+    .subcategory-name {
+        font-size: 1.05rem;
+        margin-bottom: 0.4rem;
+        font-weight: 700;
         color: #6366f1;
         background: none;
         border: none;
-        box-shadow: none;
+        padding: 0;
+        display: flex;
+        align-items: center;
+    }
+    .month-inputs {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    .month-input-group {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        background: #f1f5f9;
+        border-radius: 0.6rem;
+        box-shadow: 0 1px 4px #6366f111;
+        padding: 0.2rem 0.1rem;
+        min-width: 0;
+    }
+    .month-label {
+        font-size: 0.92rem;
+        margin-bottom: 0.15rem;
+        color: #6366f1;
         font-weight: 700;
+        text-align: center;
+        background: none;
+        border: none;
+        box-shadow: none;
         opacity: 1;
         letter-spacing: 0.7px;
         display: block;
@@ -681,11 +688,54 @@ h1 {
         color: #f59e0b;
         background: none;
         font-weight: 900;
-        opacity: 1;
+    }
+    .amount-input {
+        font-size: 1.08rem;
+        padding: 0.7rem 0.3rem;
+        border-radius: 0.6rem;
+        border: 1.5px solid #e0e7ff;
+        background: #fff;
+        text-align: center;
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        transition: border 0.2s, box-shadow 0.2s;
+    }
+    .amount-input:focus {
+        border: 1.5px solid #6366f1;
+        box-shadow: 0 2px 12px #6366f122;
+        outline: none;
+    }
+    .year-total-display {
+        margin-top: 0.7rem;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.08rem;
+        font-weight: 700;
+        color: #6366f1;
+    }
+    .year-total-label {
+        font-size: 0.95em;
+        color: #64748b;
+        margin-right: 0.3em;
+    }
+    .year-total-amount {
+        font-size: 1.1em;
+        font-weight: 900;
+        color: #6366f1;
+    }
+    .year-total-amount.negative {
+        color: #ef4444;
+    }
+    .year-total-amount.positive {
+        color: #10b981;
     }
 }
 
-/* On desktop, keep header row's month labels visible */
+/* --- DESKTOP MONTH GRID --- */
 @media (min-width: 769px) {
     .subcategory-row.month-header-row {
         display: flex;
@@ -693,6 +743,16 @@ h1 {
     .month-label {
         display: block;
     }
+    .subcategory-grid {
+        overflow-x: auto;
+        overflow-y: visible;
+    }
+}
+
+/* --- Prevent horizontal overflow on mobile --- */
+body, html {
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 /* --- DARK THEME --- */
