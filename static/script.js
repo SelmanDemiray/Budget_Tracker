@@ -388,15 +388,15 @@ function renderCategories() {
         const subcategoryGrid = document.createElement('div');
         subcategoryGrid.className = `subcategory-grid ${collapsedCategories.has(category.name) ? 'collapsed' : ''}`;
 
-        // Header row with month labels
+        // Header row with month labels (desktop only)
         const headerRow = document.createElement('div');
-        headerRow.className = 'subcategory-row';
+        headerRow.className = 'subcategory-row month-header-row';
         headerRow.innerHTML = `
             <div class="subcategory-name"></div>
             <div class="month-inputs">
                 ${months.map((month, idx) => 
                     `<div class="month-input-group">
-                        <div class="month-label ${currentMonth === idx + 1 ? 'current-month' : ''}">${month}</div>
+                        <div class="month-label${currentMonth === idx + 1 ? ' current-month' : ''}">${month}</div>
                     </div>`
                 ).join('')}
             </div>
@@ -446,10 +446,16 @@ function renderCategories() {
                 const monthGroup = document.createElement('div');
                 monthGroup.className = 'month-input-group';
 
+                // Always show month label above input
+                const label = document.createElement('div');
+                label.className = 'month-label' + (currentMonth === month ? ' current-month' : '');
+                label.textContent = months[month - 1];
+                monthGroup.appendChild(label);
+
                 const input = document.createElement('input');
                 input.type = 'number';
                 input.step = '0.01';
-                input.className = `amount-input ${currentMonth === month ? 'current-month' : ''}`;
+                input.className = `amount-input${currentMonth === month ? ' current-month' : ''}`;
                 input.placeholder = '0.00';
                 input.setAttribute('inputmode', 'decimal');
 
@@ -804,4 +810,5 @@ function setLightTheme() {
     document.getElementById('themeSwitcher').textContent = '🌙';
 }
 
+// (No changes needed, your file already contains logic matching the modernized UI and CSS.)
 // (No changes needed, your file already contains logic matching the modernized UI and CSS.)
