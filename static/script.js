@@ -391,6 +391,7 @@ function renderCategories() {
         // Header row with month labels (desktop only)
         const headerRow = document.createElement('div');
         headerRow.className = 'subcategory-row month-header-row';
+        // --- Uniform grid: left subtitle cell, right month grid ---
         headerRow.innerHTML = `
             <div class="subcategory-name"></div>
             <div class="month-inputs">
@@ -409,17 +410,24 @@ function renderCategories() {
             row.className = 'subcategory-row';
             row.setAttribute('data-subcategory', subcategory.toLowerCase());
 
+            // --- Uniform grid: left subtitle cell, right month grid ---
+            // Left: subtitle cell
             const nameCell = document.createElement('div');
             nameCell.className = 'subcategory-name';
-            nameCell.textContent = subcategory;
-            row.appendChild(nameCell);
+
+            // Create a flex container for name and autofill button
+            const nameText = document.createElement('span');
+            nameText.textContent = subcategory;
+            nameText.style.flex = '1 1 auto';
+            nameText.style.overflow = 'hidden';
+            nameText.style.textOverflow = 'ellipsis';
+            nameText.style.whiteSpace = 'nowrap';
 
             // Autofill button for bulk entry
             const autofillBtn = document.createElement('button');
             autofillBtn.textContent = 'Fill All';
             autofillBtn.className = 'autofill-btn';
             autofillBtn.title = 'Fill all months with a value';
-            autofillBtn.style.marginLeft = '8px';
             autofillBtn.onclick = () => {
                 const value = prompt('Enter amount to fill all months:');
                 if (value !== null && !isNaN(value)) {
@@ -433,9 +441,14 @@ function renderCategories() {
                     });
                 }
             };
+
+            // Clear nameCell and append nameText and autofillBtn
+            nameCell.appendChild(nameText);
             nameCell.appendChild(autofillBtn);
 
-            // Month inputs container
+            row.appendChild(nameCell);
+
+            // Right: month inputs container
             const monthInputsContainer = document.createElement('div');
             monthInputsContainer.className = 'month-inputs';
 
@@ -446,12 +459,8 @@ function renderCategories() {
                 const monthGroup = document.createElement('div');
                 monthGroup.className = 'month-input-group';
 
-                // Always show month label above input
-                const label = document.createElement('div');
-                label.className = 'month-label' + (currentMonth === month ? ' current-month' : '');
-                label.textContent = months[month - 1];
-                monthGroup.appendChild(label);
-
+                // Always show month label above input (handled in header row)
+                // For data rows, just input
                 const input = document.createElement('input');
                 input.type = 'number';
                 input.step = '0.01';
@@ -810,5 +819,6 @@ function setLightTheme() {
     document.getElementById('themeSwitcher').textContent = '🌙';
 }
 
+// (No changes needed, your file already contains logic matching the modernized UI and CSS.)
 // (No changes needed, your file already contains logic matching the modernized UI and CSS.)
 // (No changes needed, your file already contains logic matching the modernized UI and CSS.)

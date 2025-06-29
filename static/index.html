@@ -20,10 +20,36 @@
         color: #3730a3;
         cursor: pointer;
         transition: background 0.2s;
+        /* NEW: align right in the name cell, don't wrap */
+        float: none;
+        margin-top: 0;
+        margin-bottom: 0;
+        position: relative;
+        top: 0;
+        right: 0;
+        /* Prevent overflow */
+        max-width: 70px;
+        white-space: nowrap;
     }
-    .autofill-btn:hover {
-        background: #c7d2fe;
+    .subcategory-name {
+        display: flex;
+        align-items: center;
+        /* Remove justify-content: space-between; let CSS file handle spacing */
+        gap: 0.5em;
+        /* ...existing code... */
     }
+    @media (max-width: 768px) {
+        .subcategory-name {
+            /* ...existing code... */
+            /* Remove justify-content: space-between; let CSS file handle spacing */
+        }
+        .autofill-btn {
+            margin-left: 0.5em;
+            margin-top: 0;
+            /* ...existing code... */
+        }
+    }
+    /* ...existing code... */
     </style>
 </head>
 <body>
@@ -208,5 +234,7 @@
     </main>
 
     <script src="/static/script.js"></script>
+</body>
+</html>
 </body>
 </html>
