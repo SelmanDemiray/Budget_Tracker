@@ -419,9 +419,10 @@ function renderCategories() {
             const nameText = document.createElement('span');
             nameText.textContent = subcategory;
             nameText.style.flex = '1 1 auto';
-            nameText.style.overflow = 'hidden';
-            nameText.style.textOverflow = 'ellipsis';
-            nameText.style.whiteSpace = 'nowrap';
+            // Remove these lines to allow wrapping:
+            // nameText.style.overflow = 'hidden';
+            // nameText.style.textOverflow = 'ellipsis';
+            // nameText.style.whiteSpace = 'nowrap';
 
             // Autofill button for bulk entry
             const autofillBtn = document.createElement('button');

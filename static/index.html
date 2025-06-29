@@ -29,7 +29,6 @@
         right: 0;
         /* Prevent overflow */
         max-width: 70px;
-        white-space: nowrap;
     }
     .subcategory-name {
         display: flex;
@@ -40,8 +39,7 @@
     }
     @media (max-width: 768px) {
         .subcategory-name {
-            /* ...existing code... */
-            /* Remove justify-content: space-between; let CSS file handle spacing */
+            /* Remove justify-content and any overflow/ellipsis/nowrap here */
         }
         .autofill-btn {
             margin-left: 0.5em;
@@ -234,6 +232,8 @@
     </main>
 
     <script src="/static/script.js"></script>
+</body>
+</html>
 </body>
 </html>
 </body>
